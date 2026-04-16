@@ -50,6 +50,7 @@ const Register = () => {
     try {
       const fullPhone = form.country + form.phone;
 
+      console.log(API.defaults.baseURL);
       const res = await API.post("/users/register", {
         ...form,
         phone: fullPhone

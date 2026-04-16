@@ -11,6 +11,7 @@ import PricingPage from "./pages/PricingPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
+import ProtectedRoute from "./components/ProtectedRoute"; // ← ADD
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -21,16 +22,22 @@ function App() {
       <AuthProvider>
         <Header />
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} /> 
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          
+          <Route path="/pricing" element={<PricingPage />} />
+
+          {/* Protected routes - must be logged in */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute><Dashboard /></ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute><Profile /></ProtectedRoute>
+          } />
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />
       </AuthProvider>
