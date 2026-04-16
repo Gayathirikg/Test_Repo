@@ -30,6 +30,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />
       </AuthProvider>
