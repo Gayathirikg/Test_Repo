@@ -1,0 +1,167 @@
+body {
+  margin: 0;
+ background: linear-gradient(135deg, #8a8f9b92, #76a5f0e5, #0206170f);
+  color: white;
+ background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: Arial;
+  min-height: 100vh;
+}
+.card {
+  width: 360px;
+  margin: 150px auto;
+  padding: 30px;
+  background: #1e293b;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgb(35, 36, 36);
+}
+
+.card h2 {
+  color: white;
+  text-align: center;
+}
+
+.card input,
+.card select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.card button {
+  width: 50%;
+  display: block;
+  margin: 10px auto 0;
+  padding: 12px;
+  background: #3b82f6;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.card button:hover {
+  background: #2563eb;
+}
+
+.phone-row {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.phone-row select {
+  width: 38% !important;
+  margin: 0 !important;
+}
+
+.phone-row input {
+  width: 62% !important;
+  margin: 0 !important;
+}
+
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: -5px;
+}
+
+.auth-link {
+  text-align: center;
+  margin-top: 14px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.auth-link span {
+  color: #60a5fa;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 4px;
+  transition: color 0.2s;
+}
+
+.auth-link span:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+/* ─── Dashboard ─── */
+
+.dashboard {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  color: white;
+}
+
+.avatar-wrap {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1abc9c;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: white;
+  color: #2c3e50;
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+}
+
+.drop-name {
+  margin: 0;
+  font-weight: bold;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+.drop-email {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.dropdown button {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: auto;
+  display: inline;
+  font-size: 14px;
+}
+
+.dropdown button:hover {
+  background: none;
+  color: #c0392b;
+}
