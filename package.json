@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx kill-port 5173 && vite",
     "build": "vite build",
-    "build:demo": "cross-env NODE_ENV=demo vite build",
+    "build:demo": "vite build --mode demo",
     "lint": "eslint .",
     "preview": "vite preview"
   },
