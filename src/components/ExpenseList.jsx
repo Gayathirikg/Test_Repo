@@ -83,9 +83,6 @@ const ExpenseList = ({ refresh }) => {
   }))
   .filter((d) => d.value > 0);
 
-console.log("ALL EXPENSES:", allExpenses);
-console.log("PIE DATA:", pieData);
-
   // ── Export CSV (Premium 2 only) ──
   const handleExportCSV = () => {
     const headers = ["Title", "Amount", "Category", "Date"];
