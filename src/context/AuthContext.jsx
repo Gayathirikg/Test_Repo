@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true); // ← ADD
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,18 +14,31 @@ export function AuthProvider({ children }) {
     if (token) {
       API.get("/users/get-user")
         .then((res) => {
-          if (res.data.success) setUser(res.data.user);
+          if (res.data.success) {
+            setUser(res.data.user);
+          } else {
+            // Token invalid — clean up
+            localStorage.removeItem("auth_Token");
+            localStorage.removeItem("plan");
+          }
         })
-        .finally(() => setAuthLoading(false)); // ← ADD
+        .catch(() => {
+          localStorage.removeItem("auth_Token");
+          localStorage.removeItem("plan");
+        })
+        .finally(() => setAuthLoading(false));
     } else {
-      setAuthLoading(false); // ← ADD
+      setAuthLoading(false);
     }
   }, []);
 
-  const login = (username, email, plan, token) => {
+  const login = (username, email, plan) => {
+    // 🔑 Token already localStorage-ல் set ஆகிடுச்சு (Login/Register page-ல்)
+    // இங்க user state மட்டும் update பண்றோம்
     setUser({ username, email, plan });
     localStorage.setItem("username", username);
     localStorage.setItem("email", email);
+    localStorage.setItem("plan", plan);
   };
 
   const logout = () => {
@@ -33,11 +46,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("auth_Token");
     localStorage.removeItem("username");
     localStorage.removeItem("email");
+    localStorage.removeItem("plan");
     navigate("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, authLoading }}> // ← ADD authLoading
+    <AuthContext.Provider value={{ user, login, logout, authLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,14 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const OTP_LENGTH = 6;
-const RESEND_COOLDOWN = 60;
+const RESEND_COOLDOWN = 60; // seconds
 
-const VerifyOtp = () => {
+const LoginOtp = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
+  const { login } = useAuth();
+
+  const { email, pendingToken, pendingUser } = location.state || {};
 
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
@@ -17,15 +20,15 @@ const VerifyOtp = () => {
   const [resendCountdown, setResendCountdown] = useState(RESEND_COOLDOWN);
   const inputRefs = useRef([]);
 
-  // Guard: if no email in state, redirect back
+  // Guard: if someone navigates here directly without going through Login
   useEffect(() => {
-    if (!email) {
-      toast.error("Session expired. Please try again.");
-      navigate("/forgot-password");
+    if (!email || !pendingToken) {
+      toast.error("Session expired. Please log in again.");
+      navigate("/");
     }
-  }, [email, navigate]);
+  }, [email, pendingToken, navigate]);
 
-  // Resend countdown timer
+  // Resend cooldown timer
   useEffect(() => {
     if (resendCountdown <= 0) return;
     const t = setInterval(() => {
@@ -38,10 +41,13 @@ const VerifyOtp = () => {
   }, [resendCountdown]);
 
   const handleDigitChange = (index, value) => {
+    // Allow only a single digit
     const digit = value.replace(/\D/g, "").slice(-1);
     const next = [...digits];
     next[index] = digit;
     setDigits(next);
+
+    // Auto-advance
     if (digit && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -69,8 +75,7 @@ const VerifyOtp = () => {
     inputRefs.current[focusIdx]?.focus();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleVerify = async () => {
     const otp = digits.join("");
     if (otp.length < OTP_LENGTH) {
       toast.error("Please enter the full 6-digit OTP");
@@ -79,17 +84,22 @@ const VerifyOtp = () => {
 
     setIsVerifying(true);
     try {
-      const res = await API.post("/users/verify-otp", { email, otp });
+      const res = await API.post("/users/verify-login-otp", { email, otp });
+
       if (res.data.success) {
-        toast.success("OTP verified!");
-        navigate("/reset-password", { state: { email, otp } });
+        // Finalise login
+        localStorage.setItem("auth_Token", pendingToken);
+        localStorage.setItem("plan", pendingUser.plan);
+        login(pendingUser.username, pendingUser.email, pendingUser.plan);
+        toast.success("Logged in successfully!");
+        navigate("/dashboard");
       } else {
-        toast.error(res.data.message);
+        toast.error(res.data.message || "Invalid OTP");
         setDigits(Array(OTP_LENGTH).fill(""));
         inputRefs.current[0]?.focus();
       }
     } catch {
-      toast.error("Server error");
+      toast.error("Server error. Please try again.");
     } finally {
       setIsVerifying(false);
     }
@@ -99,7 +109,7 @@ const VerifyOtp = () => {
     if (resendCountdown > 0) return;
     setIsResending(true);
     try {
-      await API.post("/users/forgot-password", { email });
+      await API.post("/users/send-login-otp", { email });
       toast.success("New OTP sent!");
       setResendCountdown(RESEND_COOLDOWN);
       setDigits(Array(OTP_LENGTH).fill(""));
@@ -119,54 +129,52 @@ const VerifyOtp = () => {
         We sent a 6-digit code to <strong style={{ color: "#e2e8f0" }}>{email}</strong>
       </p>
 
-      <form onSubmit={handleSubmit}>
-        {/* 6-box OTP input */}
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            justifyContent: "center",
-            marginBottom: "24px",
-          }}
-          onPaste={handlePaste}
-        >
-          {digits.map((digit, i) => (
-            <input
-              key={i}
-              ref={(el) => (inputRefs.current[i] = el)}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleDigitChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              disabled={isVerifying}
-              style={{
-                width: "44px",
-                height: "52px",
-                textAlign: "center",
-                fontSize: "22px",
-                fontWeight: "700",
-                borderRadius: "10px",
-                border: digit ? "2px solid #3b82f6" : "2px solid #334155",
-                background: "#0f172a",
-                color: "#f1f5f9",
-                outline: "none",
-                transition: "border-color 0.15s",
-                caretColor: "transparent",
-              }}
-            />
-          ))}
-        </div>
+      {/* 6-box OTP input */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          justifyContent: "center",
+          marginBottom: "24px",
+        }}
+        onPaste={handlePaste}
+      >
+        {digits.map((digit, i) => (
+          <input
+            key={i}
+            ref={(el) => (inputRefs.current[i] = el)}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) => handleDigitChange(i, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(i, e)}
+            disabled={isVerifying}
+            style={{
+              width: "44px",
+              height: "52px",
+              textAlign: "center",
+              fontSize: "22px",
+              fontWeight: "700",
+              borderRadius: "10px",
+              border: digit ? "2px solid #3b82f6" : "2px solid #334155",
+              background: "#0f172a",
+              color: "#f1f5f9",
+              outline: "none",
+              transition: "border-color 0.15s",
+              caretColor: "transparent",
+            }}
+          />
+        ))}
+      </div>
 
-        <button
-          type="submit"
-          disabled={isVerifying || digits.join("").length < OTP_LENGTH}
-          style={{ width: "100%" }}
-        >
-          {isVerifying ? "Verifying…" : "Verify OTP"}
-        </button>
-      </form>
+      <button
+        onClick={handleVerify}
+        disabled={isVerifying || digits.join("").length < OTP_LENGTH}
+        style={{ width: "100%" }}
+      >
+        {isVerifying ? "Verifying…" : "Verify & Login"}
+      </button>
 
       {/* Resend */}
       <p className="auth-link" style={{ marginTop: "16px" }}>
@@ -184,10 +192,10 @@ const VerifyOtp = () => {
       </p>
 
       <p className="auth-link">
-        <span onClick={() => navigate("/forgot-password")}>← Back</span>
+        <span onClick={() => navigate("/")}>← Back to Login</span>
       </p>
     </div>
   );
 };
 
-export default VerifyOtp;
+export default LoginOtp;

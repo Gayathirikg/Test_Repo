@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
-
 const Register = () => {
   const navigate = useNavigate();
 
@@ -13,10 +12,11 @@ const Register = () => {
     email: "",
     country: "+91",
     phone: "",
-    password: ""
+    password: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,38 +27,41 @@ const Register = () => {
     e.preventDefault();
 
     let newErrors = {};
-    setErrors({});
-
     if (!form.username) newErrors.username = "Username required";
     if (!form.email) newErrors.email = "Email required";
     if (!form.phone) newErrors.phone = "Phone required";
     if (!form.password) newErrors.password = "Password required";
-
-    if (form.password && form.password.length < 6) {
+    if (form.password && form.password.length < 6)
       newErrors.password = "Minimum 6 characters";
-    }
-
-    if (form.phone && form.phone.length !== 10) {
+    if (form.phone && form.phone.length !== 10)
       newErrors.phone = "Phone must be 10 digits";
-    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const fullPhone = form.country + form.phone;
-
-      console.log(API.defaults.baseURL);
       const res = await API.post("/users/register", {
         ...form,
-        phone: fullPhone
+        phone: fullPhone,
       });
 
       if (res.data.success) {
-        toast.success("Registered successfully ✅");
-        setTimeout(() => navigate("/"), 1500);
+        toast.success("Account created! Now choose your plan.");
+
+        // Pass the token and user data so PricingPage can log the user in
+        // after they pick a plan — no extra login step needed.
+        navigate("/choose-plan", {
+          state: {
+            token: res.data.token,
+            user: res.data.user,
+            isOnboarding: true,  // tells PricingPage this is a fresh registration
+          },
+        });
       } else {
         const msg = res.data.message.toLowerCase();
         if (msg.includes("email")) {
@@ -76,33 +79,37 @@ const Register = () => {
       } else if (msg.includes("phone")) {
         setErrors({ phone: "Phone already exists" });
       } else {
-        setErrors({ api: "Server error" });
+        setErrors({ api: "Server error. Please try again." });
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="card">
-      <h2>Register</h2>
+      <h2>Create Account</h2>
 
       <form onSubmit={handleSubmit}>
-
         <input
           name="username"
           placeholder="Username"
           onChange={handleChange}
+          disabled={isSubmitting}
         />
         {errors.username && <p className="error">{errors.username}</p>}
 
         <input
           name="email"
           placeholder="Email"
+          type="email"
           onChange={handleChange}
+          disabled={isSubmitting}
         />
         {errors.email && <p className="error">{errors.email}</p>}
 
         <div className="phone-row">
-          <select name="country" onChange={handleChange}>
+          <select name="country" onChange={handleChange} disabled={isSubmitting}>
             <option value="+91">🇮🇳 +91</option>
             <option value="+1">🇺🇸 +1</option>
           </select>
@@ -110,6 +117,7 @@ const Register = () => {
             name="phone"
             placeholder="Phone"
             onChange={handleChange}
+            disabled={isSubmitting}
           />
         </div>
         {errors.phone && <p className="error">{errors.phone}</p>}
@@ -119,17 +127,19 @@ const Register = () => {
           name="password"
           placeholder="Password"
           onChange={handleChange}
+          disabled={isSubmitting}
         />
         {errors.password && <p className="error">{errors.password}</p>}
 
         {errors.api && <p className="error">{errors.api}</p>}
 
-        <button type="submit" className="register-btn">Register</button>
-
+        <button type="submit" className="register-btn" disabled={isSubmitting}>
+          {isSubmitting ? "Creating account…" : "Create Account →"}
+        </button>
       </form>
 
       <p className="auth-link">
-        Already have an account?
+        Already have an account?{" "}
         <span onClick={() => navigate("/")}>Login</span>
       </p>
     </div>

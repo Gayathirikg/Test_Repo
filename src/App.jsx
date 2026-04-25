@@ -7,7 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile";
-import PricingPage from "./pages/PricingPage";
+import PricingPage from "./pages/Pricingpage.jsx";
+import LoginOtp from "./pages/LoginOtp";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
@@ -27,6 +28,8 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/login-otp" element={<LoginOtp />} />
+          <Route path="/choose-plan" element={<PricingPage />} /> 
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />

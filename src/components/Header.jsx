@@ -20,6 +20,7 @@ const Header = () => {
       </div>
 
       <nav className="header-nav">
+        {/* Not logged in */}
         {!user && (
           <>
             <Link className="header-link" to="/register">
@@ -31,10 +32,27 @@ const Header = () => {
           </>
         )}
 
+        {/* Logged in */}
         {user && (
           <>
             <Link className="header-link" to="/dashboard">
               Dashboard
+            </Link>
+
+            {/* 💳 Plans — logged in users மட்டும் */}
+            <Link
+              to="/pricing"
+              style={{
+                color: "#a855f7",
+                textDecoration: "none",
+                fontWeight: "700",
+                fontSize: "14px",
+                border: "1px solid #a855f7",
+                padding: "6px 14px",
+                borderRadius: "20px",
+              }}
+            >
+              💳 Plans
             </Link>
 
             <div
@@ -81,21 +99,6 @@ const Header = () => {
           </>
         )}
       </nav>
-
-      <Link
-        to="/pricing"
-        style={{
-          color: "#a855f7",
-          textDecoration: "none",
-          fontWeight: "700",
-          fontSize: "14px",
-          border: "1px solid #a855f7",
-          padding: "6px 14px",
-          borderRadius: "20px",
-        }}
-      >
-        💳 Plans
-      </Link>
     </header>
   );
 };

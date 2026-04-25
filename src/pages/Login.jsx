@@ -2,16 +2,15 @@ import { useState } from "react";
 import API from "../services/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [step, setStep] = useState("credentials"); // "credentials" | "sending"
 
   const startCountdown = (seconds) => {
     setCountdown(seconds);
@@ -35,50 +34,64 @@ const Login = () => {
       return;
     }
 
-    try {
-      const res = await API.post("/users/login", { email, password });
-      if (res.data.success) {
-        console.log("TOKEN FROM SERVER:", res.data.token); // keep this for now
+    setStep("sending");
 
-        if (!res.data.token) {
-          toast.error("No token received from server");
-          return; // ← stop here so we can see the problem
-        }
-        localStorage.setItem("auth_Token", res.data.token);
-        console.log("SAVED TOKEN:", localStorage.getItem("auth_Token"));
-        localStorage.setItem("plan", res.data.user.plan);
-        login(res.data.user.username, res.data.user.email, res.data.user.plan);
-        toast.success("Login successful");
-        navigate("/dashboard");
-      } else {
-        toast.error(res.data.message);
+    try {
+      // Step 1: Verify credentials
+      const res = await API.post("/users/login", { email, password });
+
+      if (!res.data.success) {
+        setStep("credentials");
+        toast.error(res.data.message || "Invalid credentials");
+        return;
       }
+
+      // Step 2: Trigger OTP to email
+      // The server sends an OTP email; we pass the token temporarily in state
+      // so LoginOtp can finalise the login after OTP verification.
+      const pendingToken = res.data.token;
+      const pendingUser = res.data.user;
+
+      await API.post("/users/send-login-otp", { email });
+
+      toast.success("OTP sent to your email!");
+      navigate("/login-otp", { state: { email, pendingToken, pendingUser } });
     } catch (error) {
+      setStep("credentials");
+
       if (error.response?.status === 429) {
         const seconds = error.response.data.retryAfter || 60;
         setIsBlocked(true);
         startCountdown(seconds);
-        toast.error(
-          error.response.data.message || "Too many attempts. Please wait.",
-        );
+        toast.error(error.response.data.message || "Too many attempts. Please wait.");
         return;
       }
 
-      toast.error("Server error");
+      toast.error("Server error. Please try again.");
     }
   };
+
+  const isSending = step === "sending";
 
   return (
     <div className="card">
       <h2>Login</h2>
 
       <form onSubmit={handleSubmit}>
-        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+        <input
+          placeholder="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isSending}
+        />
 
         <input
           type="password"
           placeholder="Password"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={isSending}
         />
 
         {isBlocked && (
@@ -87,18 +100,18 @@ const Login = () => {
           </p>
         )}
 
-        <button type="submit" disabled={isBlocked}>
-          {isBlocked ? `Wait ${countdown}s` : "Login"}
+        <button type="submit" disabled={isBlocked || isSending}>
+          {isSending ? "Sending OTP…" : isBlocked ? `Wait ${countdown}s` : "Continue →"}
         </button>
       </form>
 
       <p className="auth-link">
-        Don't have an account?
+        Don't have an account?{" "}
         <span onClick={() => navigate("/register")}>Create Account</span>
       </p>
 
       <p className="auth-link">
-        Forgot Password?
+        Forgot Password?{" "}
         <span onClick={() => navigate("/forgot-password")}>Click Here</span>
       </p>
     </div>
