@@ -15,7 +15,7 @@ const plans = [
     features: [
       { text: "View Expenses", included: true },
       { text: "Add / Edit / Delete", included: true },
-      { text: "Pagination", included: true },
+      { text: "Pagination", included: true }, 
       { text: "Filters & Sort", included: false },
       { text: "Pie Chart", included: false },
       { text: "Export CSV", included: false },

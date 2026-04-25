@@ -7,7 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Header from "./components/Header";
 import { AuthProvider } from "./context/AuthContext";
 import Profile from "./pages/Profile";
-import PricingPage from "./pages/Pricingpage.jsx";
+import PricingPage from "./pages/PricingPage.jsx";
 import LoginOtp from "./pages/LoginOtp";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
